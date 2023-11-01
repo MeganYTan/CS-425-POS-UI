@@ -1,19 +1,31 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import Login from './login/Login'
+import Login from './login/Login';
+import Customers from './customer/Customers';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Header from './header/Header';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <BrowserRouter>
-  <Routes>
-    <Route path="/" element={<Login />}></Route>
-    {/* reports, current transaction, employees, stock, home is login? */}
-  </Routes>
-</BrowserRouter>
+  <>
+    <BrowserRouter>
+      <Header />
+
+      <Routes>
+        {/* <Route path="/" element={<Login />}></Route> */}
+        <Route path="/" element={<Customers />} />
+        {/* <Route path="/orders" component={Orders} /> */}
+        {/* <Route path="/discounts" component={Discounts} /> */}
+        {/* <Route path="/products" component={Products} /> */}
+        {/* <Route path="/employees" component={Employees} /> */}
+        {/* <Redirect from="/" to="/orders" /> */}
+        {/* reports, current transaction, employees, stock, home is login? */}
+      </Routes>
+    </BrowserRouter>
+  </>
 );
 
 // If you want to start measuring performance in your app, pass a function
