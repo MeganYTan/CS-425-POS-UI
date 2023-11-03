@@ -6,6 +6,7 @@ import Customer from './customer/Customer';
 import Discount from './discount/Discount';
 import Product from './product/Product';
 import Employee from './employee/Employee';
+import Orders from './orders/Orders';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -20,7 +21,7 @@ root.render(
       <Routes>
         {/* <Route path="/" element={<Login />}></Route> */}
         <Route path="/customer" element={<Customer />} />
-        {/* <Route path="/orders" component={Orders} /> */}
+        <Route path="/orders" element={<Orders />} />
         <Route path="/discount" element={<Discount/>} />
         <Route path="/product" element={<Product/>} />
         <Route path="/employee" element={<Employee />} />
