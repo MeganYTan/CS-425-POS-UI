@@ -54,23 +54,41 @@ function Customer() {
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
     const [modalOpen, setModalOpen] = React.useState(false);
     const [newCustomer, setNewCustomer] = React.useState({
-        customer_id: '',
         name_first_name: '',
         name_last_name: '',
         email: '',
         loyalty_points: '',
         phone_number: ''
     });
+    const [errors, setErrors] = useState({
+        email: '',
+        phone_number: '',
+    });
 
-
+    const shouldSaveButtonBeDisabled = () => {
+        return Object.values(errors).some(error => error !== '') || Object.values(newCustomer).some(value => value ==='');
+    };
     function handleSaveRow(row) {
         editCustomerAPI(row.customer_id, row);
     }
     const handleChange = (e) => {
-        setNewCustomer({
-            ...newCustomer,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+
+        const newErrors = { ...errors, [name]: '' };
+
+        const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+        if (name === "email" && !emailPattern.test(value)) {
+            newErrors.email = "Please enter a valid email address.";
+        }
+
+        // Validate phone number
+        const phoneNumberPattern = /^\d{10}$/;
+        if (name === "phone_number" && !phoneNumberPattern.test(value)) {
+            newErrors.phone_number = "Phone number must be 10 digits.";
+        }
+
+        setErrors(newErrors);
+        setNewCustomer({ ...newCustomer, [name]: value });
     };
 
     const handleSaveCustomer = async () => {
@@ -96,7 +114,7 @@ function Customer() {
                 setRows(data);
             } catch (error) {
                 setBanner({ active: true, message: 'There was an error fetching the customers data.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000); 
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             }
         }
         fetchData();
@@ -114,10 +132,10 @@ function Customer() {
             if (response.ok) {
                 setRows(rows.filter(customer => customer.customer_id !== customerId));
                 setBanner({ active: true, message: 'Customer deleted successfully!', type: 'success' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);  
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             } else {
                 setBanner({ active: true, message: 'Failed to delete the customer.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000); 
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             }
         } catch (error) {
             console.error('There was an error deleting the customer.', error);
@@ -126,32 +144,32 @@ function Customer() {
 
     function editCustomerAPI(customer_id, field, value) {
         fetch(`${url}/edit/${customer_id}`, {
-            method: 'POST', 
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(field),
             mode: 'cors'
         })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.success) {
-                setBanner({ active: true, message: 'Customer edited successfully!', type: 'success' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);  
-                const updatedRows = rows.map(item => {
-                    if (item.customer_id === customer_id) {
-                        item = field;
-                    }
-                    return item;
-                })
-                setRows(updatedRows);
-            } else {
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    setBanner({ active: true, message: 'Customer edited successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    const updatedRows = rows.map(item => {
+                        if (item.customer_id === customer_id) {
+                            item = field;
+                        }
+                        return item;
+                    })
+                    setRows(updatedRows);
+                } else {
+                    setBanner({ active: true, message: 'Failed to edit the customer.', type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                }
+            })
+            .catch((error) => {
                 setBanner({ active: true, message: 'Failed to edit the customer.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);  
-            }
-        })
-        .catch((error) => {
-            setBanner({ active: true, message: 'Failed to edit the customer.', type: 'error' });
-            setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);  
-        });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+            });
 
     }
     function addCustomerAPI(newCustomer) {
@@ -165,55 +183,75 @@ function Customer() {
                 if (data.customer_id) {
                     newCustomer.customer_id = data.customer_id;
                     setBanner({ active: true, message: 'Customer added successfully!', type: 'success' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);  
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     // update the id
-                    const updatedRows = [...rows,newCustomer];
+                    const updatedRows = [...rows, newCustomer];
+                    console.log(updatedRows);
                     setRows(updatedRows);
                 } else {
                     setBanner({ active: true, message: 'Failed to add the customer.', type: 'error' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000); 
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     // remove the customer from the row
                     setRows(rows.filter(customer => customer.customer_id != ""));
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to add the customer. Error:' + error , type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000); 
+                setBanner({ active: true, message: 'Failed to add the customer. Error:' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
     }
-    
+
     return (
         <>
             <h2>Customers</h2>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
-            <div style={{ height: '80vh', width: '100%' }}>
+            <div >
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
                     <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
 
                         Add +
                     </Button>
+
                 </div>
                 <DataGrid
                     rows={rows}
                     columns={columns}
                     pageSize={15}
                     getRowId={(row) => row.customer_id}
+                    autoHeight
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Customer</DialogTitle>
                     <DialogContent>
                         <TextField name="name_first_name" label="First Name" fullWidth value={newCustomer.name_first_name} onChange={handleChange} />
                         <TextField name="name_last_name" label="Last Name" fullWidth value={newCustomer.name_last_name} onChange={handleChange} />
-                        <TextField name="email" label="Email" fullWidth value={newCustomer.email} onChange={handleChange} />
                         <TextField name="loyalty_points" label="Loyalty Points" fullWidth value={newCustomer.loyalty_points} onChange={handleChange} />
-                        <TextField name="phone_number" label="Phone Number" fullWidth value={newCustomer.phone_number} onChange={handleChange} />
+                        <TextField
+                            name="email"
+                            label="Email"
+                            fullWidth
+                            value={newCustomer.email}
+                            onChange={handleChange}
+                            error={!!errors.email}
+                            helperText={errors.email}
+                        />
+                        <TextField
+                            name="phone_number"
+                            label="Phone Number"
+                            fullWidth
+                            value={newCustomer.phone_number}
+                            onChange={handleChange}
+                            error={!!errors.phone_number}
+                            helperText={errors.phone_number}
+                        />
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
-                        <Button onClick={handleSaveCustomer} color="primary">Save</Button>
+                        <Button onClick={handleSaveCustomer} color="primary" disabled={shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>
             </div>
+
         </>
     );
 }

@@ -54,7 +54,6 @@ function Employee() {
         },
     ]);
     const emptyEmployee = JSON.parse(JSON.stringify({
-        employee_id: '',
         name_first_name: '',
         name_last_name: '',
         employee_role: '',
@@ -65,18 +64,35 @@ function Employee() {
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
     const [modalOpen, setModalOpen] = React.useState(false);
     const [newEmployee, setNewEmployee] = React.useState(emptyEmployee);
+    const [errors, setErrors] = useState({
+        employee_email: '',
+        phone_number: '',
+    });
 
-    const handleCellEdit = (params, event) => {
-
+    const shouldSaveButtonBeDisabled = () => {
+        return Object.values(errors).some(error => error !== '') || Object.values(newEmployee).some(value => value ==='');
     };
     function handleSaveRow(row) {
         editEmployeeAPI(row.employee_id, row);
     }
     const handleChange = (e) => {
-        setNewEmployee({
-            ...newEmployee,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        console.log(name, value);
+        const newErrors = { ...errors, [name]: '' };
+
+        const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+        if (name === "employee_email" && !emailPattern.test(value)) {
+            newErrors.employee_email = "Please enter a valid email address.";
+        }
+
+        // Validate phone number
+        const phoneNumberPattern = /^\d{10}$/;
+        if (name === "phone_number" && !phoneNumberPattern.test(value)) {
+            newErrors.phone_number = "Phone number must be 10 digits.";
+        }
+        console.log(newErrors);
+        setErrors(newErrors);
+        setNewEmployee({ ...newEmployee, [name]: value });
     };
 
     const handleSaveEmployee = async () => {
@@ -189,9 +205,9 @@ function Employee() {
 
     return (
         <>
-            <h2>Employee -- to do</h2>
+            <h2>Employee</h2>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
-            <div style={{ height: '80vh', width: '100%' }}>
+            <div >
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
                     <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
 
@@ -217,6 +233,7 @@ function Employee() {
                             setRows(updatedRows);
                         }
                     }}
+                    autoHeight
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Employee</DialogTitle>
@@ -224,15 +241,19 @@ function Employee() {
                         <TextField name="name_first_name" label="First Name" fullWidth value={newEmployee.name_first_name} onChange={handleChange} />
                         <TextField name="name_last_name" label="Last Name" fullWidth value={newEmployee.name_last_name} onChange={handleChange} />
                         <TextField name="employee_role" label="Employee Role" fullWidth value={newEmployee.employee_role} onChange={handleChange} />
-                        <TextField name="phone_number" label="Phone Number" fullWidth value={newEmployee.phone_number} onChange={handleChange} />
-                        <TextField name="employee_email" label="Email" fullWidth value={newEmployee.employee_email} onChange={handleChange} />
+                        <TextField name="phone_number" label="Phone Number" fullWidth value={newEmployee.phone_number} onChange={handleChange} 
+                            error={!!errors.phone_number}
+                            helperText={errors.phone_number}/>
+                        <TextField name="employee_email" label="Email" fullWidth value={newEmployee.employee_email} onChange={handleChange} 
+                            error={!!errors.employee_email}
+                            helperText={errors.employee_email} />
                         <TextField name="employee_password" label="Pasword" fullWidth value={newEmployee.employee_password} onChange={handleChange} />
 
 
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
-                        <Button onClick={handleSaveEmployee} color="primary">Save</Button>
+                        <Button onClick={handleSaveEmployee} color="primary" disabled = {shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>
             </div>

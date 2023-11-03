@@ -39,14 +39,14 @@ function Order() {
     const closeModal = () => setIsModalOpen(false);
     const columns = [
         { field: 'order_id', headerName: 'ID', width: 100, editable: false },
-        { field: 'customer_id', headerName: 'Customer', width: 150, editable: true },
-        { field: 'discount_id', headerName: 'Discount', width: 150, editable: true },
-        { field: 'employee_id', headerName: 'Employee ID', width: 170, editable: true },
-        { field: 'date_time', headerName: 'Date and Time', width: 250, editable: true },
-        { field: 'order_products', headerName: 'Products: Quantity', width: 250, editable: true },
-        { field: 'order_total', headerName: 'Order Amount', width: 170, editable: true, },
-        { field: 'payment_amount', headerName: 'Payment Amount', width: 190, editable: true, },
-        { field: 'payment_method', headerName: 'Payment Method', width: 190, editable: true, },
+        { field: 'customer_id', headerName: 'Customer', width: 150, editable: false },
+        { field: 'discount_id', headerName: 'Discount', width: 150, editable: false },
+        { field: 'employee_id', headerName: 'Employee ID', width: 170, editable: false },
+        { field: 'date_time', headerName: 'Date and Time', width: 250, editable: false },
+        { field: 'order_products', headerName: 'Products: Quantity', width: 250, editable: false },
+        { field: 'order_total', headerName: 'Order Amount', width: 170, editable: false, },
+        { field: 'payment_amount', headerName: 'Payment Amount', width: 190, editable: false, },
+        { field: 'payment_method', headerName: 'Payment Method', width: 180, editable: false, },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -123,6 +123,7 @@ function Order() {
     }
 
     const handleSaveOrder = async (orderData) => {
+        console.log(orderData)
         const newDate = new Date(orderData.date);
         const time = new Date(orderData.time);
         newDate.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
@@ -217,9 +218,9 @@ function Order() {
 
     return (
         <>
-            <h2>Order -- to do</h2>
+            <h2>Order</h2>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
-            <div style={{ height: '80vh', width: '100%' }}>
+            <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
                     <Button variant="contained" color="primary" onClick= {handleAddRow}>
                         Add +
@@ -228,9 +229,10 @@ function Order() {
                 <DataGrid
                     rows={rows}
                     columns={columns}
-                    pageSize={100}
+                    pageSize={10}
                     getRowId={(row) => row.order_id}
                     editMode="row"
+                    autoHeight
                 />
                 {isModalOpen && <OrdersModal open={isModalOpen} onClose={closeModal} onSave = {handleSaveOrder} 
                 source={modalSource}

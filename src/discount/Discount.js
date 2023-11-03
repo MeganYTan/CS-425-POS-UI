@@ -48,7 +48,6 @@ function Discount() {
         },
     ]);
     const emptyDisount = JSON.parse(JSON.stringify({
-        discount_id: '',
         discount_amount: '',
         discount_description: '',
         coupon_code: ''
@@ -57,6 +56,9 @@ function Discount() {
     const [modalOpen, setModalOpen] = React.useState(false);
     const [newDiscount, setNewDiscount] = React.useState(emptyDisount);
 
+    const shouldSaveButtonBeDisabled = () => {
+        return Object.values(newDiscount).some(value => value ==='');
+    };
 
     function handleSaveRow(row) {
         editDiscountAPI(row.discount_id, row);
@@ -175,7 +177,7 @@ function Discount() {
         <>
             <h2>Discount</h2>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
-            <div style={{ height: '80vh', width: '100%' }}>
+            <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
                     <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
 
@@ -187,6 +189,7 @@ function Discount() {
                     columns={columns}
                     pageSize={15}
                     getRowId={(row) => row.discount_id}
+                    autoHeight
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Discount</DialogTitle>
@@ -198,7 +201,7 @@ function Discount() {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
-                        <Button onClick={handleSaveDiscount} color="primary">Save</Button>
+                        <Button onClick={handleSaveDiscount} color="primary" disabled = {shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>
             </div>

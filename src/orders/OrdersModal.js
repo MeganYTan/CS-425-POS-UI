@@ -42,7 +42,6 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
 
     useEffect(() => {
         if (source === "EDIT") {
-            console.log(orderData);
             let idCounter = 0;
             setPaymentAmount(orderData.payment_amount);
             setPaymentMethod(orderData.payment_method)
@@ -112,6 +111,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
         }
     }
 
+
     const productColumns = [
         // Define your columns for products here
         {
@@ -152,14 +152,12 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
         }
     ];
     const handleProductIdChange = (event, id) => {
-        console.log(id, event.target.value);
         const newRows = rows.map(row => {
             if (row.id == id)
                 row.product_id = event.target.value;
             return row;
         })
         setRows(newRows);
-        console.log(newRows);
     };
 
 
@@ -201,6 +199,9 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
         onSave(orderData);
         onClose();
     };
+    const shouldSaveButtonBeDisabled = () => {
+        return employeeId === "" || rows.length === 0;
+    }
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
             <DialogTitle>Add New Order</DialogTitle>
@@ -308,7 +309,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={handleSave}>Save Order</Button>
+                <Button onClick={handleSave} disabled={shouldSaveButtonBeDisabled()}>Save Order</Button>
             </DialogActions>
         </Dialog>
     );

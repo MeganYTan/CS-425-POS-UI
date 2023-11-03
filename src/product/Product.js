@@ -49,8 +49,7 @@ function Product() {
             product_description: 'DEFAULT',
         },
     ]);
-    const emptyDisount = JSON.parse(JSON.stringify({
-        product_id: '',
+    const emptyProduct = JSON.parse(JSON.stringify({
         category: '',
         product_name: '',
         price: '',
@@ -58,8 +57,11 @@ function Product() {
     }));
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
     const [modalOpen, setModalOpen] = React.useState(false);
-    const [newProduct, setNewProduct] = React.useState(emptyDisount);
+    const [newProduct, setNewProduct] = React.useState(emptyProduct);
 
+    const shouldSaveButtonBeDisabled = () => {
+        return Object.values(newProduct).some(value => value ==='');
+    };
 
     function handleSaveRow(row) {
         editProductAPI(row.product_id, row);
@@ -75,7 +77,7 @@ function Product() {
         addProductAPI(newProduct);
 
         // Reset the form and close the modal
-        setNewProduct(emptyDisount);
+        setNewProduct(emptyProduct);
         setModalOpen(false);
     };
 
@@ -179,7 +181,7 @@ function Product() {
         <>
             <h2>Product</h2>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
-            <div style={{ height: '80vh', width: '100%' }}>
+            <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
                     <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
 
@@ -191,6 +193,7 @@ function Product() {
                     columns={columns}
                     pageSize={15}
                     getRowId={(row) => row.product_id}
+                    autoHeight
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Product</DialogTitle>
@@ -204,7 +207,7 @@ function Product() {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
-                        <Button onClick={handleSaveProduct} color="primary">Save</Button>
+                        <Button onClick={handleSaveProduct} color="primary" disabled = {shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>
             </div>
