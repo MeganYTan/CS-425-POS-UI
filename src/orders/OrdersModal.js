@@ -12,9 +12,12 @@ import {
     InputLabel,
     FormControl
 } from '@mui/material';
-import { KeyboardDatePicker, KeyboardTimePicker } from '@material-ui/pickers';
+import { KeyboardDatePicker, KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
+import './OrdersModal.css';
 
-const OrdersModal = ({ open, onClose, onSave }) => {
+
+const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
     const [paymentMethod, setPaymentMethod] = useState('');
     const [paymentAmount, setPaymentAmount] = useState('');
     const [date, setDate] = useState(new Date());
@@ -22,23 +25,54 @@ const OrdersModal = ({ open, onClose, onSave }) => {
     const [customerId, setCustomerId] = useState("");
     const [discountId, setDiscountId] = useState('');
     const [employeeId, setEmployeeId] = useState('');
+    const [orderId, setOrderId] = useState("");
+    const [rows, setRows] = useState([]);
     const [products, setProducts] = useState([]);
-
     const [customers, setCustomers] = useState([]);
     const [discounts, setDiscounts] = useState([]);
     const [employees, setEmployees] = useState([]);
+    const [rowCounter, setRowCounter] = useState(0);
     const url = 'http://localhost:5000';
     const customersUrl = url + '/customer';
     const discountUrl = url + '/discount';
     const employeeUrl = url + '/employee';
-    // Fetch dropdown options on component mount or when opening the popup
+    const productUrl = url + '/product';
+
+    // set up data for edit
+
+    useEffect(() => {
+        if (source === "EDIT") {
+            console.log(orderData);
+            let idCounter = 0;
+            setPaymentAmount(orderData.payment_amount);
+            setPaymentMethod(orderData.payment_method)
+            setCustomerId(orderData.customer_id);
+            setDiscountId(orderData.discount_id);
+            setEmployeeId(orderData.employee_id);
+            setDate(orderData.date_time);
+            setTime(orderData.date_time);
+            setOrderId(orderData.order_id);
+            // set products
+            let orderProductsArr = orderData.order_products.split(",");
+            orderProductsArr = orderProductsArr.map(item => {
+                const lineItem = item.split(":");
+                idCounter++;
+                return {product_id: lineItem[0], quantity: lineItem[1], id: idCounter};
+            });
+            setRowCounter(idCounter);
+            setRows(orderProductsArr);
+        }
+    }, [])
+
+
+
+
     useEffect(() => {
         if (open) {
-            // fetch customers, discounts, and employees
-            // setCustomers, setDiscounts, setEmployees
             fetchCustomers();
             fetchDiscounts();
             fetchEmployees();
+            fetchProducts();
         }
     }, [open]);
     const fetchCustomers = async () => {
@@ -46,7 +80,6 @@ const OrdersModal = ({ open, onClose, onSave }) => {
             const response = await fetch(`${customersUrl}`, { mode: 'cors' });
             const data = await response.json();
             setCustomers(data);
-            console.log(customers);
         } catch (error) {
             console.log("Error fetching customers");
         }
@@ -55,7 +88,7 @@ const OrdersModal = ({ open, onClose, onSave }) => {
         try {
             const response = await fetch(discountUrl, { mode: 'cors' });
             const data = await response.json();
-            setDiscounts(data => data.map(row => row.discount_id));
+            setDiscounts(data);
         } catch (error) {
             console.log("Error fetching discounts");
         }
@@ -64,16 +97,40 @@ const OrdersModal = ({ open, onClose, onSave }) => {
         try {
             const response = await fetch(employeeUrl, { mode: 'cors' });
             const data = await response.json();
-            setEmployees(data => data.map(row => row.employee_id));
+            setEmployees(data);
         } catch (error) {
-            console.log("Error fetching discounts");
+            console.log("Error fetching employees");
+        }
+    }
+    const fetchProducts = async () => {
+        try {
+            const response = await fetch(productUrl, { mode: 'cors' });
+            const data = await response.json();
+            setProducts(data);
+        } catch (error) {
+            console.log("Error fetching products");
         }
     }
 
     const productColumns = [
         // Define your columns for products here
-        { field: 'product_id', headerName: 'ID', width: 130, editable: false },
-        { field: 'quantity', headerName: 'Quantity', width: 200, editable: false },
+        {
+            field: 'product_id', headerName: 'ID', width: 300, editable: true,
+            renderCell: (params) => (
+                <select
+                    value={params.value}
+                    onChange={(event) => handleProductIdChange(event, params.id)}
+                >
+                    {products.map((product, index) => (
+                        <option key={product.product_id} value={product.product_id}>
+                            {product.product_id}: {product.category} - {product.product_name}; ${product.price}
+                        </option>
+
+                    ))}
+                </select>
+            ),
+        },
+        { field: 'quantity', headerName: 'Quantity', width: 200, editable: true },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -94,6 +151,38 @@ const OrdersModal = ({ open, onClose, onSave }) => {
             },
         }
     ];
+    const handleProductIdChange = (event, id) => {
+        console.log(id, event.target.value);
+        const newRows = rows.map(row => {
+            if (row.id == id)
+                row.product_id = event.target.value;
+            return row;
+        })
+        setRows(newRows);
+        console.log(newRows);
+    };
+
+
+    const emptyProduct = {
+        product_id: 0,
+        quantity: 0
+    };
+    const increaseRowCounter = () => {
+        const newRowCounter = rowCounter + 1;
+        setRowCounter(newRowCounter)
+    }
+    const getEmptyProduct = () => {
+        increaseRowCounter();
+        return { ...emptyProduct, id: rowCounter }
+    }
+    const addProduct = () => {
+        const newRows = [...rows, getEmptyProduct()];
+        setRows(newRows);
+    }
+    const deleteProduct = (productId) => {
+        const newRows = rows.filter(row => row.product_id != productId);
+        setRows(newRows);
+    }
 
     const handleSave = () => {
         const orderData = {
@@ -104,80 +193,118 @@ const OrdersModal = ({ open, onClose, onSave }) => {
             customerId,
             discountId,
             employeeId,
-            products
+            rows // row of products
         };
+        if (source === "EDIT") {
+            orderData.orderId = orderId;
+        }
         onSave(orderData);
         onClose();
     };
-    const deleteProduct = () => {
-
-    }
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
             <DialogTitle>Add New Order</DialogTitle>
-            <div>{customerId}</div>
-            <DialogContent>
-                <FormControl fullWidth margin="normal">
-                    <InputLabel>Customer ID</InputLabel>
-                    <Select
-                        value={customerId}
-                        onChange={(e) => setCustomerId(e.target.value)}
-                    >
-                        {customers.map((customer, index) => (
-                            <MenuItem key={customer.customer_id} value={customer.customer_id}>
-                                {customer.customer_id}: {customer.name_first_name} {customer.name_last_name}
-                            </MenuItem>
+            <DialogContent style={{ minHeight: "75vh" }}>
+                <div style={{ display: "flex" }}>
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel>Customer ID</InputLabel>
+                        <Select
+                            value={customerId}
+                            onChange={(e) => setCustomerId(e.target.value)}
+                        >
+                            {customers.map((customer, index) => (
+                                <MenuItem key={customer.customer_id} value={customer.customer_id}>
+                                    {customer.customer_id}: {customer.name_first_name} {customer.name_last_name}
+                                </MenuItem>
 
-                        ))}
-                    </Select>
-                </FormControl>
-                {/* Repeat the above structure for discountId and employeeId */}
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel>Discount ID</InputLabel>
+                        <Select
+                            value={discountId}
+                            onChange={(e) => setDiscountId(e.target.value)}
+                        >
+                            {discounts.map((discount, index) => (
+                                <MenuItem key={discount.discount_id} value={discount.discount_id}>
+                                    {discount.discount_id}: {discount.coupon_code}; ${discount.discount_amount}
+                                </MenuItem>
 
-                {/* <TextField
-                    fullWidth
-                    margin="normal"
-                    label="Payment Method"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                /> */}
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel>Employee ID</InputLabel>
+                        <Select
+                            value={employeeId}
+                            onChange={(e) => setEmployeeId(e.target.value)}
+                        >
+                            {employees.map((employee, index) => (
+                                <MenuItem key={employee.employee_id} value={employee.employee_id}>
+                                    {employee.employee_id}: {employee.name_first_name} {employee.name_last_name}
+                                </MenuItem>
 
-                {/* <TextField
-                    fullWidth
-                    margin="normal"
-                    label="Payment Amount"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                    type="number"
-                /> */}
+                            ))}
+                        </Select>
+                    </FormControl>
+                </div>
+                <div style={{ display: "flex" }}>
 
-                {/* <KeyboardDatePicker
-          margin="normal"
-          label="Date"
-          format="MM/dd/yyyy"
-          value={date}
-          onChange={setDate}
-          KeyboardButtonProps={{
-            'aria-label': 'change date',
-          }}
-        /> */}
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        label="Payment Method"
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
 
-                {/* <KeyboardTimePicker
-          margin="normal"
-          label="Time"
-          value={time}
-          onChange={setTime}
-          KeyboardButtonProps={{
-            'aria-label': 'change time',
-          }}
-        /> */}
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        label="Payment Amount"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        type="number"
+                    />
+                </div>
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
 
-                {/* DataGrid for products */}
-                {/* <DataGrid
-                    rows={products}
-                    columns={productColumns}
-                    pageSize={5}
-                    rowsPerPageOptions={[5]}
-                /> */}
+                    <KeyboardDatePicker
+                        margin="normal"
+                        label="Date"
+                        format="MM/dd/yyyy"
+                        value={date}
+                        onChange={setDate}
+                    />
+                    <KeyboardTimePicker
+                        margin="normal"
+                        label="Time"
+                        value={time}
+                        onChange={setTime}
+                    />
+                </MuiPickersUtilsProvider>
+                <div style={{ height: '45vh' }}>
+                    <Button onClick={addProduct} color="primary" variant="contained">
+                        Add Row
+                    </Button>
+                    <DataGrid
+                        rows={rows}
+                        columns={productColumns}
+                        pageSize={3}
+                        onCellEditCommit={(params, event) => {
+                            if (params.field == "quantity") {
+                                const updatedRows = rows.map(row => {
+                                    if (row.id === params.id) {
+                                        row.quantity = params.value;
+                                    }
+                                    return row;
+                                });
+                                setRows(updatedRows);
+                            }
+                        }}
+                    />
+                </div>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>

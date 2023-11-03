@@ -1,0 +1,11 @@
+.MuiDataGrid-dataContainer {
+  min-height: 30vh !important;
+}
+
+.MuiDataGrid-viewport {
+  min-height: 300px !important;
+}
+
+.MuiDataGrid-renderingZone {
+  min-height: 300px !important;
+}

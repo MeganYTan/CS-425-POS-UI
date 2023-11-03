@@ -33,6 +33,8 @@ function Order() {
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
     const [newOrder, setNewOrder] = React.useState(emptyOrder);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [modalSource, setModalSource] = React.useState("");
+    const [modalData, setModalData] = React.useState({});
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
     const columns = [
@@ -56,9 +58,9 @@ function Order() {
                             variant="contained"
                             color="primary"
                             size="small"
-                            onClick={() => handleSaveRow(params.row)}
+                            onClick={() => handleEditRow(params.row)}
                         >
-                            Save
+                            Edit
                         </Button>
                         &nbsp;&nbsp;
                         <Button
@@ -74,28 +76,8 @@ function Order() {
             },
         }
     ];
-
-
-    function handleSaveRow(row) {
-        editOrderAPI(row.employee_id, row);
-    }
-
-    const handleChange = (e) => {
-        setNewOrder({
-            ...newOrder,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    const handleSaveOrder = async () => {
-        addOrderAPI(newOrder);
-        // Reset the form and close the modal
-        setNewOrder(emptyOrder);
-        setIsModalOpen(false);
-    };
-
+    // get orders
     useEffect(() => {
-        // get orders
         async function fetchData() {
             try {
                 const response = await fetch(url, { mode: 'cors' });
@@ -108,35 +90,6 @@ function Order() {
         }
         fetchData();
     }, []);
-    function addOrderAPI(newOrder) {
-        fetch(`${url}/add`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newOrder),
-            mode: 'cors'
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.success) {
-                    const employeeFromDb = data.employee;
-                    newOrder = employeeFromDb;
-                    setBanner({ active: true, message: 'Order added successfully!', type: 'success' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-                    // update the id
-                    const updatedRows = [...rows, newOrder];
-                    setRows(updatedRows);
-                } else {
-                    setBanner({ active: true, message: 'Failed to add the employee.', type: 'error' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-                    // remove the employee from the row
-                    setRows(rows.filter(employee => employee.employee_id != ""));
-                }
-            })
-            .catch((error) => {
-                setBanner({ active: true, message: 'Failed to add the employee. Error:' + error, type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            });
-    }
     const deleteOrderAPI = async (orderId) => {
         try {
             const response = await fetch(`${url}/delete/${orderId}`, {
@@ -158,10 +111,78 @@ function Order() {
             console.error('There was an error deleting the order.', error);
         }
     };
+    function handleAddRow(row) {
+        openModal();
+        setModalSource("ADD");
+    }
 
-    function editOrderAPI(employee_id, field, value) {
+    function handleEditRow(row) {
+        openModal();
+        setModalSource("EDIT");
+        setModalData(row);
+    }
+
+    const handleSaveOrder = async (orderData) => {
+        const newDate = new Date(orderData.date);
+        const time = new Date(orderData.time);
+        newDate.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
+        // massage data
+        const apiObject = {
+            employee_id: orderData.employeeId,
+            date_time: newDate.toISOString().slice(0, 19).replace('T', ' '),
+            customer_id: orderData.customerId ? orderData.customerId : null,
+            discount_id: orderData.discountId ? orderData.discountId : null,
+            payment_method: orderData.paymentMethod,
+            payment_amount: orderData.paymentAmount,
+            order_products: orderData.rows,
+        }
+        if (modalSource === "ADD") {
+            // add
+            addOrderAPI(apiObject);
+        } else {
+            // edit
+            apiObject.order_id = orderData.orderId;
+            editOrderAPI(orderData.orderId, apiObject);
+        }
+        
+        setNewOrder(emptyOrder);
+        setIsModalOpen(false);
+    };
+    
+
+    function addOrderAPI(newOrder) {
+        fetch(`${url}/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newOrder),
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    const orderFromDb = data.order;
+                    setBanner({ active: true, message: 'Order added successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    // update the id
+                    const updatedRows = [...rows, orderFromDb];
+                    setRows(updatedRows);
+                } else {
+                    setBanner({ active: true, message: 'Failed to add the employee.', type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    // remove the employee from the row
+                    setRows(rows.filter(employee => employee.employee_id != ""));
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to add the employee. Error:' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+            });
+    }
+
+
+    function editOrderAPI(order_id, field) {
         console.log(field);
-        fetch(`${url}/edit/${employee_id}`, {
+        fetch(`${url}/edit/${order_id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(field),
@@ -174,20 +195,20 @@ function Order() {
                     setBanner({ active: true, message: 'Order edited successfully!', type: 'success' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     const updatedRows = rows.map(item => {
-                        if (item.employee_id === employee_id) {
-                            item = data.employee;
+                        if (item.order_id === order_id) {
+                            item = data.order;
                             console.log(item);
                         }
                         return item;
                     })
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to edit the employee.', type: 'error' });
+                    setBanner({ active: true, message: 'Failed to edit the order.', type: 'error' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to edit the employee.', type: 'error' });
+                setBanner({ active: true, message: 'Failed to edit the order.', type: 'error' });
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
 
@@ -200,8 +221,7 @@ function Order() {
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div style={{ height: '80vh', width: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
-                    <Button variant="contained" color="primary" onClick= {openModal}>
-
+                    <Button variant="contained" color="primary" onClick= {handleAddRow}>
                         Add +
                     </Button>
                 </div>
@@ -211,21 +231,10 @@ function Order() {
                     pageSize={100}
                     getRowId={(row) => row.order_id}
                     editMode="row"
-                    onCellEditCommit={(params, event) => {
-                        console.log(params);
-                        if (params.field == "employee_password") {
-                            const updatedRows = rows.map(row => {
-                                if (row.employee_id === params.id) {
-                                    row.hasPasswordBeenEdited = true;
-                                    row.employee_password = params.value;
-                                }
-                                return row;
-                            });
-                            setRows(updatedRows);
-                        }
-                    }}
                 />
-                {isModalOpen && <OrdersModal open={isModalOpen} closePopup={closeModal} />}
+                {isModalOpen && <OrdersModal open={isModalOpen} onClose={closeModal} onSave = {handleSaveOrder} 
+                source={modalSource}
+                orderData = {modalData} />}
             </div>
         </>
     );
