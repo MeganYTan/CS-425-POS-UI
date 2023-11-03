@@ -25,11 +25,11 @@ function Header() {
                     <Typography variant="h6" className={classes.title}>
                         CS425 Group O POS CRUD APP
                     </Typography>
-                    <Link to="/products" className={classes.link}><Button color="inherit">Products</Button></Link>
+                    <Link to="/product" className={classes.link}><Button color="inherit">Products</Button></Link>
                     <Link to="/orders" className={classes.link}><Button color="inherit">Orders</Button></Link>
-                    <Link to="/employees" className={classes.link}><Button color="inherit">Employees</Button></Link>
-                    <Link to="/discounts" className={classes.link}><Button color="inherit">Discounts</Button></Link>
-                    <Link to="/customers" className={classes.link}><Button color="inherit">Customers</Button></Link>
+                    <Link to="/employee" className={classes.link}><Button color="inherit">Employees</Button></Link>
+                    <Link to="/discount" className={classes.link}><Button color="inherit">Discounts</Button></Link>
+                    <Link to="/customer" className={classes.link}><Button color="inherit">Customers</Button></Link>
                 </Toolbar>
             </AppBar>
         </div>

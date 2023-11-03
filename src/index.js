@@ -2,11 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import Login from './login/Login';
-import Customers from './customer/Customers';
+import Customer from './customer/Customer';
+import Discount from './discount/Discount';
+import Product from './product/Product';
+import Employee from './employee/Employee';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Header from './header/Header';
+import Header from './common/header/Header';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -16,11 +19,11 @@ root.render(
 
       <Routes>
         {/* <Route path="/" element={<Login />}></Route> */}
-        <Route path="/" element={<Customers />} />
+        <Route path="/customer" element={<Customer />} />
         {/* <Route path="/orders" component={Orders} /> */}
-        {/* <Route path="/discounts" component={Discounts} /> */}
-        {/* <Route path="/products" component={Products} /> */}
-        {/* <Route path="/employees" component={Employees} /> */}
+        <Route path="/discount" element={<Discount/>} />
+        <Route path="/product" element={<Product/>} />
+        <Route path="/employee" element={<Employee />} />
         {/* <Redirect from="/" to="/orders" /> */}
         {/* reports, current transaction, employees, stock, home is login? */}
       </Routes>

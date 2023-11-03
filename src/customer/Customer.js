@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Banner from '../banner/Banner';
+import Banner from '../common/banner/Banner';
 import { DataGrid } from '@material-ui/data-grid';
 import { Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@material-ui/core';
 
-function Customers() {
+function Customer() {
     const url = 'http://localhost:5000/customer';
     const columns = [
         { field: 'customer_id', headerName: 'ID', width: 130, editable: false },
@@ -43,7 +43,6 @@ function Customers() {
     ];
     const [rows, setRows] = useState([
         {
-            id: 1,
             customer_id: 1,
             name_first_name: 'John',
             name_last_name: 'Doe',
@@ -219,4 +218,4 @@ function Customers() {
     );
 }
 
-export default Customers;
+export default Customer;
