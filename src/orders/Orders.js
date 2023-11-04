@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Banner from '../common/banner/Banner';
 import { DataGrid } from '@material-ui/data-grid';
-import { Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import OrdersModal from './OrdersModal';
 
 function Order() {
@@ -19,19 +19,8 @@ function Order() {
             payment_method: "DEFAULT"
         },
     ]);
-    const emptyOrder = JSON.parse(JSON.stringify({
-        order_id: "",
-        customer_id: "",
-        discount_id: "",
-        employee_id: "",
-        date_time: "",
-        order_products: "",
-        order_total: "",
-        payment_amount: "",
-        payment_method: "DEFAULT"
-    }));
+
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
-    const [newOrder, setNewOrder] = React.useState(emptyOrder);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [modalSource, setModalSource] = React.useState("");
     const [modalData, setModalData] = React.useState({});
@@ -67,7 +56,7 @@ function Order() {
                             variant="contained"
                             color="secondary"
                             size="small"
-                            onClick={() => deleteOrderAPI(params.row.employee_id)}
+                            onClick={() => deleteOrderAPI(params.row.order_id)}
                         >
                             Delete
                         </Button>
@@ -145,8 +134,7 @@ function Order() {
             apiObject.order_id = orderData.orderId;
             editOrderAPI(orderData.orderId, apiObject);
         }
-        
-        setNewOrder(emptyOrder);
+
         setIsModalOpen(false);
     };
     
@@ -171,7 +159,7 @@ function Order() {
                     setBanner({ active: true, message: 'Failed to add the employee.', type: 'error' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     // remove the employee from the row
-                    setRows(rows.filter(employee => employee.employee_id != ""));
+                    setRows(rows.filter(employee => employee.employee_id !== ""));
                 }
             })
             .catch((error) => {
