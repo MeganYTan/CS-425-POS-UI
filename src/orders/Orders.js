@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Banner from '../common/banner/Banner';
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import { Button } from '@material-ui/core';
 import OrdersModal from './OrdersModal';
 
@@ -221,6 +221,12 @@ function Order() {
                     getRowId={(row) => row.order_id}
                     editMode="row"
                     autoHeight
+                    pageSizeOptions={[10, 25, 50, 100]}
+                    initialState={{
+                        pagination: {
+                          paginationModel: { pageSize: 25, page: 0 },
+                        },
+                      }}
                 />
                 {isModalOpen && <OrdersModal open={isModalOpen} onClose={closeModal} onSave = {handleSaveOrder} 
                 source={modalSource}

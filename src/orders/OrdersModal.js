@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import {
     Button,
     Dialog,
@@ -22,7 +22,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
     const [paymentAmount, setPaymentAmount] = useState('');
     const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(new Date());
-    const [customerId, setCustomerId] = useState("");
+    const [customerId, setCustomerId] = useState('');
     const [discountId, setDiscountId] = useState('');
     const [employeeId, setEmployeeId] = useState('');
     const [orderId, setOrderId] = useState("");
@@ -55,8 +55,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
             let orderProductsArr = orderData.order_products.split(",");
             orderProductsArr = orderProductsArr.map(item => {
                 const lineItem = item.split(":");
-                idCounter++;
-                return {product_id: lineItem[0], quantity: lineItem[1], id: idCounter};
+                return { product_id: lineItem[0], quantity: lineItem[1], id: idCounter++ };
             });
             setRowCounter(idCounter);
             setRows(orderProductsArr);
@@ -142,7 +141,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
                             variant="contained"
                             color="secondary"
                             size="small"
-                            onClick={() => deleteProduct(params.row.product_id)}
+                            onClick={() => deleteProduct(params.row.id)}
                         >
                             Delete
                         </Button>
@@ -177,8 +176,8 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
         const newRows = [...rows, getEmptyProduct()];
         setRows(newRows);
     }
-    const deleteProduct = (productId) => {
-        const newRows = rows.filter(row => row.product_id != productId);
+    const deleteProduct = (id) => {
+        const newRows = rows.filter(row => row.id != id);
         setRows(newRows);
     }
 
@@ -207,20 +206,23 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
             <DialogTitle>Add New Order</DialogTitle>
             <DialogContent style={{ minHeight: "75vh" }}>
                 <div style={{ display: "flex" }}>
-                    <FormControl fullWidth margin="normal">
-                        <InputLabel>Customer ID</InputLabel>
-                        <Select
-                            value={customerId}
-                            onChange={(e) => setCustomerId(e.target.value)}
-                        >
-                            {customers.map((customer, index) => (
-                                <MenuItem key={customer.customer_id} value={customer.customer_id}>
-                                    {customer.customer_id}: {customer.name_first_name} {customer.name_last_name}
+                        <FormControl fullWidth margin="normal">
+                            <InputLabel>Customer ID</InputLabel>
+                            <Select
+                                value={customerId}
+                                onChange={(e) => setCustomerId(e.target.value)}
+                            >
+                                <MenuItem key={""} value={""}>
+                                    No Customer
                                 </MenuItem>
+                                {customers.map((customer, index) => (
+                                    <MenuItem key={customer.customer_id} value={customer.customer_id}>
+                                        {customer.customer_id}: {customer.name_first_name} {customer.name_last_name}
+                                    </MenuItem>
 
-                            ))}
-                        </Select>
-                    </FormControl>
+                                ))}
+                            </Select>
+                        </FormControl>
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Discount ID</InputLabel>
                         <Select
@@ -285,14 +287,16 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
                         onChange={setTime}
                     />
                 </MuiPickersUtilsProvider>
-                <div style={{ height: '45vh' }}>
+                <div>
                     <Button onClick={addProduct} color="primary" variant="contained">
                         Add Row
                     </Button>
-                    <DataGrid
+
+                </div>
+                <DataGrid
                         rows={rows}
                         columns={productColumns}
-                        pageSize={3}
+                        autoHeight
                         onCellEditCommit={(params, event) => {
                             if (params.field == "quantity") {
                                 const updatedRows = rows.map(row => {
@@ -304,8 +308,13 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
                                 setRows(updatedRows);
                             }
                         }}
+                        pageSizeOptions={[3, 5, 10]}
+                        initialState={{
+                            pagination: {
+                                paginationModel: { pageSize: 3, page: 0 },
+                            },
+                        }}
                     />
-                </div>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>

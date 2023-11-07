@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Banner from '../common/banner/Banner';
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import { Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@material-ui/core';
 
 function Customer() {
@@ -216,9 +216,14 @@ function Customer() {
                 <DataGrid
                     rows={rows}
                     columns={columns}
-                    pageSize={15}
                     getRowId={(row) => row.customer_id}
                     autoHeight
+                    pageSizeOptions={[10, 25, 50, 100]}
+                    initialState={{
+                        pagination: {
+                          paginationModel: { pageSize: 25, page: 0 },
+                        },
+                      }}
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Customer</DialogTitle>
