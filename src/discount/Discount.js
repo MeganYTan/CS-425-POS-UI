@@ -57,7 +57,7 @@ function Discount() {
     const [newDiscount, setNewDiscount] = React.useState(emptyDisount);
 
     const shouldSaveButtonBeDisabled = () => {
-        return Object.values(newDiscount).some(value => value ==='');
+        return Object.values(newDiscount).some(value => value === '');
     };
 
     function handleSaveRow(row) {
@@ -108,7 +108,7 @@ function Discount() {
                     const updatedRows = [...rows, newDiscount];
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to add the discount.', type: 'error' });
+                    setBanner({ active: true, message: 'Failed to add the discount:' + data.message, type: 'error' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     // remove the discount from the row
                     setRows(rows.filter(discount => discount.discount_id != ""));
@@ -119,27 +119,30 @@ function Discount() {
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
     }
-    const deleteDiscountAPI = async (discountId) => {
-        try {
-            const response = await fetch(`${url}/delete/${discountId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                mode: 'cors'
+    function deleteDiscountAPI(discountId) {
+        fetch(`${url}/delete/${discountId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    setRows(rows.filter(discount => discount.discount_id !== discountId));
+                    setBanner({ active: true, message: 'Discount deleted successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                } else {
+                    setBanner({ active: true, message: 'Failed to delete the discount: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to delete the discount: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
-            if (response.ok) {
-                setRows(rows.filter(discount => discount.discount_id !== discountId));
-                setBanner({ active: true, message: 'Discount deleted successfully!', type: 'success' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            } else {
-                setBanner({ active: true, message: 'Failed to delete the discount.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            }
-        } catch (error) {
-            console.error('There was an error deleting the discount.', error);
-        }
-    };
+    }
 
     function editDiscountAPI(discount_id, field, value) {
         fetch(`${url}/edit/${discount_id}`, {
@@ -161,12 +164,12 @@ function Discount() {
                     })
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to edit the discount.', type: 'error' });
+                    setBanner({ active: true, message: 'Failed to edit the discount: ' + data.message, type: 'error' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to edit the discount.', type: 'error' });
+                setBanner({ active: true, message: 'Failed to edit the discount: ' + error, type: 'error' });
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
 
@@ -193,21 +196,21 @@ function Discount() {
                     pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
                         pagination: {
-                          paginationModel: { pageSize: 25, page: 0 },
+                            paginationModel: { pageSize: 25, page: 0 },
                         },
-                      }}
+                    }}
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Discount</DialogTitle>
                     <DialogContent>
                         <TextField name="discount_amount" type="number" label="Amount" fullWidth value={newDiscount.discount_amount} onChange={handleChange} />
                         <TextField name="discount_description" label="Description" fullWidth value={newDiscount.discount_description} onChange={handleChange} />
-                        <TextField name="coupon_code"  label="Coupon Code" fullWidth value={newDiscount.coupon_code} onChange={handleChange} />
-                        
+                        <TextField name="coupon_code" label="Coupon Code" fullWidth value={newDiscount.coupon_code} onChange={handleChange} />
+
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
-                        <Button onClick={handleSaveDiscount} color="primary" disabled = {shouldSaveButtonBeDisabled()}>Save</Button>
+                        <Button onClick={handleSaveDiscount} color="primary" disabled={shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>
             </div>

@@ -60,7 +60,7 @@ function Product() {
     const [newProduct, setNewProduct] = React.useState(emptyProduct);
 
     const shouldSaveButtonBeDisabled = () => {
-        return Object.values(newProduct).some(value => value ==='');
+        return Object.values(newProduct).some(value => value === '');
     };
 
     function handleSaveRow(row) {
@@ -123,27 +123,30 @@ function Product() {
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
     }
-    const deleteProductAPI = async (productId) => {
-        try {
-            const response = await fetch(`${url}/delete/${productId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                mode: 'cors'
+    function deleteProductAPI(productId) {
+        fetch(`${url}/delete/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    setRows(rows.filter(product => product.product_id !== productId));
+                    setBanner({ active: true, message: 'Product deleted successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                } else {
+                    setBanner({ active: true, message: 'Failed to delete the product: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to delete the product: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
-            if (response.ok) {
-                setRows(rows.filter(product => product.product_id !== productId));
-                setBanner({ active: true, message: 'Product deleted successfully!', type: 'success' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            } else {
-                setBanner({ active: true, message: 'Failed to delete the product.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            }
-        } catch (error) {
-            console.error('There was an error deleting the product.', error);
-        }
-    };
+    }
 
     function editProductAPI(product_id, field, value) {
         fetch(`${url}/edit/${product_id}`, {
@@ -165,12 +168,12 @@ function Product() {
                     })
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to edit the product.', type: 'error' });
+                    setBanner({ active: true, message: 'Failed to edit the product: ' + data.message, type: 'error' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to edit the product.', type: 'error' });
+                setBanner({ active: true, message: 'Failed to edit the product: ' + error, type: 'error' });
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
 
@@ -197,9 +200,9 @@ function Product() {
                     pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
                         pagination: {
-                          paginationModel: { pageSize: 25, page: 0 },
+                            paginationModel: { pageSize: 25, page: 0 },
                         },
-                      }}
+                    }}
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Product</DialogTitle>
@@ -213,7 +216,7 @@ function Product() {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
-                        <Button onClick={handleSaveProduct} color="primary" disabled = {shouldSaveButtonBeDisabled()}>Save</Button>
+                        <Button onClick={handleSaveProduct} color="primary" disabled={shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>
             </div>

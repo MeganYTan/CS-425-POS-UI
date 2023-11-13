@@ -66,7 +66,7 @@ function Customer() {
     });
 
     const shouldSaveButtonBeDisabled = () => {
-        return Object.values(errors).some(error => error !== '') || Object.values(newCustomer).some(value => value ==='');
+        return Object.values(errors).some(error => error !== '') || Object.values(newCustomer).some(value => value === '');
     };
     function handleSaveRow(row) {
         editCustomerAPI(row.customer_id, row);
@@ -120,27 +120,32 @@ function Customer() {
         fetchData();
     }, []);
 
-    const deleteCustomerAPI = async (customerId) => {
-        try {
-            const response = await fetch(`${url}/delete/${customerId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                mode: 'cors'
+    function deleteCustomerAPI(customerId) {
+        fetch(`${url}/delete/${customerId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    setRows(rows.filter(customer => customer.customer_id !== customerId));
+                    setBanner({ active: true, message: 'Customer deleted successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                } else {
+                    setBanner({ active: true, message: 'Failed to delete the customer: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to delete the customer: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
-            if (response.ok) {
-                setRows(rows.filter(customer => customer.customer_id !== customerId));
-                setBanner({ active: true, message: 'Customer deleted successfully!', type: 'success' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            } else {
-                setBanner({ active: true, message: 'Failed to delete the customer.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            }
-        } catch (error) {
-            console.error('There was an error deleting the customer.', error);
-        }
-    };
+        
+    }
 
     function editCustomerAPI(customer_id, field, value) {
         fetch(`${url}/edit/${customer_id}`, {
@@ -162,13 +167,13 @@ function Customer() {
                     })
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to edit the customer.', type: 'error' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    setBanner({ active: true, message: 'Failed to edit the customer: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to edit the customer.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                setBanner({ active: true, message: 'Failed to delete the customer: ' + error, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
 
     }
@@ -189,15 +194,15 @@ function Customer() {
                     console.log(updatedRows);
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to add the customer.', type: 'error' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    setBanner({ active: true, message: 'Failed to add the customer: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
                     // remove the customer from the row
                     setRows(rows.filter(customer => customer.customer_id != ""));
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to add the customer. Error:' + error, type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                setBanner({ active: true, message: 'Failed to delete the customer: ' + error, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
     }
 
@@ -221,9 +226,9 @@ function Customer() {
                     pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
                         pagination: {
-                          paginationModel: { pageSize: 25, page: 0 },
+                            paginationModel: { pageSize: 25, page: 0 },
                         },
-                      }}
+                    }}
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Customer</DialogTitle>

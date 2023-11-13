@@ -79,36 +79,18 @@ function Order() {
         }
         fetchData();
     }, []);
-    const deleteOrderAPI = async (orderId) => {
-        try {
-            const response = await fetch(`${url}/delete/${orderId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                mode: 'cors'
-            });
-            if (response.ok) {
-                setRows(rows.filter(order => order.order_id !== orderId));
-                setBanner({ active: true, message: 'Order deleted successfully!', type: 'success' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            } else {
-                setBanner({ active: true, message: 'Failed to delete the order.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            }
-        } catch (error) {
-            console.error('There was an error deleting the order.', error);
-        }
-    };
+
     function handleAddRow(row) {
         openModal();
         setModalSource("ADD");
     }
 
     function handleEditRow(row) {
+        console.log("should start spinning");
         openModal();
         setModalSource("EDIT");
         setModalData(row);
+        console.log("should stop spinning'");
     }
 
     const handleSaveOrder = async (orderData) => {
@@ -137,7 +119,7 @@ function Order() {
 
         setIsModalOpen(false);
     };
-    
+
 
     function addOrderAPI(newOrder) {
         fetch(`${url}/add`, {
@@ -156,21 +138,20 @@ function Order() {
                     const updatedRows = [...rows, orderFromDb];
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to add the employee.', type: 'error' });
+                    setBanner({ active: true, message: 'Failed to add the order: ' + data.message, type: 'error' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     // remove the employee from the row
                     setRows(rows.filter(employee => employee.employee_id !== ""));
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to add the employee. Error:' + error, type: 'error' });
+                setBanner({ active: true, message: 'Failed to add the order: ' + error, type: 'error' });
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
     }
 
 
     function editOrderAPI(order_id, field) {
-        console.log(field);
         fetch(`${url}/edit/${order_id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -179,25 +160,50 @@ function Order() {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
                 if (data.success) {
                     setBanner({ active: true, message: 'Order edited successfully!', type: 'success' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     const updatedRows = rows.map(item => {
                         if (item.order_id === order_id) {
-                            item = data.order;
+                            item = data.order; // order data returned from the DB
                             console.log(item);
                         }
                         return item;
-                    })
+                    });
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to edit the order.', type: 'error' });
+                    setBanner({ active: true, message: 'Failed to edit the order: ' + data.message, type: 'error' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to edit the order.', type: 'error' });
+                setBanner({ active: true, message: 'Failed to edit the order: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+            });
+
+    }
+
+    function deleteOrderAPI(orderId) {
+        fetch(`${url}/delete/${orderId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    setRows(rows.filter(order => order.order_id !== orderId));
+                    setBanner({ active: true, message: 'Order deleted successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                } else {
+                    setBanner({ active: true, message: 'Failed to delete the order: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to edit the order: ' + error, type: 'error' });
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
 
@@ -210,7 +216,7 @@ function Order() {
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
-                    <Button variant="contained" color="primary" onClick= {handleAddRow}>
+                    <Button variant="contained" color="primary" onClick={handleAddRow}>
                         Add +
                     </Button>
                 </div>
@@ -224,13 +230,13 @@ function Order() {
                     pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
                         pagination: {
-                          paginationModel: { pageSize: 25, page: 0 },
+                            paginationModel: { pageSize: 25, page: 0 },
                         },
-                      }}
+                    }}
                 />
-                {isModalOpen && <OrdersModal open={isModalOpen} onClose={closeModal} onSave = {handleSaveOrder} 
-                source={modalSource}
-                orderData = {modalData} />}
+                {isModalOpen && <OrdersModal open={isModalOpen} onClose={closeModal} onSave={handleSaveOrder}
+                    source={modalSource}
+                    orderData={modalData} />}
             </div>
         </>
     );

@@ -70,14 +70,13 @@ function Employee() {
     });
 
     const shouldSaveButtonBeDisabled = () => {
-        return Object.values(errors).some(error => error !== '') || Object.values(newEmployee).some(value => value ==='');
+        return Object.values(errors).some(error => error !== '') || Object.values(newEmployee).some(value => value === '');
     };
     function handleSaveRow(row) {
         editEmployeeAPI(row.employee_id, row);
     }
     const handleChange = (e) => {
         const { name, value } = e.target;
-        console.log(name, value);
         const newErrors = { ...errors, [name]: '' };
 
         const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -90,7 +89,6 @@ function Employee() {
         if (name === "phone_number" && !phoneNumberPattern.test(value)) {
             newErrors.phone_number = "Phone number must be 10 digits.";
         }
-        console.log(newErrors);
         setErrors(newErrors);
         setNewEmployee({ ...newEmployee, [name]: value });
     };
@@ -135,7 +133,7 @@ function Employee() {
                     const updatedRows = [...rows, newEmployee];
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to add the employee.', type: 'error' });
+                    setBanner({ active: true, message: 'Failed to add the employee: ' + data.message, type: 'error' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     // remove the employee from the row
                     setRows(rows.filter(employee => employee.employee_id != ""));
@@ -146,30 +144,32 @@ function Employee() {
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
             });
     }
-    const deleteEmployeeAPI = async (employeeId) => {
-        try {
-            const response = await fetch(`${url}/delete/${employeeId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                mode: 'cors'
+    function deleteEmployeeAPI(employeeId) {
+        fetch(`${url}/delete/${employeeId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    setRows(rows.filter(employee => employee.employee_id !== employeeId));
+                    setBanner({ active: true, message: 'Employee deleted successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                } else {
+                    setBanner({ active: true, message: 'Failed to delete the employee: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to delete the employee: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
-            if (response.ok) {
-                setRows(rows.filter(employee => employee.employee_id !== employeeId));
-                setBanner({ active: true, message: 'Employee deleted successfully!', type: 'success' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            } else {
-                setBanner({ active: true, message: 'Failed to delete the employee.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
-            }
-        } catch (error) {
-            console.error('There was an error deleting the employee.', error);
-        }
-    };
+    }
 
-    function editEmployeeAPI(employee_id, field, value) {
-        console.log(field);
+    function editEmployeeAPI(employee_id, field) {
         fetch(`${url}/edit/${employee_id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -178,26 +178,24 @@ function Employee() {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
                 if (data.success) {
                     setBanner({ active: true, message: 'Employee edited successfully!', type: 'success' });
                     setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
                     const updatedRows = rows.map(item => {
                         if (item.employee_id === employee_id) {
                             item = data.employee;
-                            console.log(item);
                         }
                         return item;
                     })
                     setRows(updatedRows);
                 } else {
-                    setBanner({ active: true, message: 'Failed to edit the employee.', type: 'error' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    setBanner({ active: true, message: 'Failed to edit the employee: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
                 }
             })
             .catch((error) => {
-                setBanner({ active: true, message: 'Failed to edit the employee.', type: 'error' });
-                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                setBanner({ active: true, message: 'Failed to edit the employee: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
 
     }
@@ -219,14 +217,12 @@ function Employee() {
                     columns={columns}
                     pageSize={15}
                     getRowId={(row) => row.employee_id}
-                    editMode="row"
-                    onCellEditCommit={(params, event) => {
-                        console.log(params);
+                    onCellEditStop={(params, event) => {
                         if (params.field == "employee_password") {
                             const updatedRows = rows.map(row => {
                                 if (row.employee_id === params.id) {
                                     row.hasPasswordBeenEdited = true;
-                                    row.employee_password = params.value;
+                                    row.employee_password = event.target.value;
                                 }
                                 return row;
                             });
@@ -237,9 +233,9 @@ function Employee() {
                     pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
                         pagination: {
-                          paginationModel: { pageSize: 25, page: 0 },
+                            paginationModel: { pageSize: 25, page: 0 },
                         },
-                      }}
+                    }}
                 />
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
                     <DialogTitle>Add New Employee</DialogTitle>
@@ -247,10 +243,10 @@ function Employee() {
                         <TextField name="name_first_name" label="First Name" fullWidth value={newEmployee.name_first_name} onChange={handleChange} />
                         <TextField name="name_last_name" label="Last Name" fullWidth value={newEmployee.name_last_name} onChange={handleChange} />
                         <TextField name="employee_role" label="Employee Role" fullWidth value={newEmployee.employee_role} onChange={handleChange} />
-                        <TextField name="phone_number" label="Phone Number" fullWidth value={newEmployee.phone_number} onChange={handleChange} 
+                        <TextField name="phone_number" label="Phone Number" fullWidth value={newEmployee.phone_number} onChange={handleChange}
                             error={!!errors.phone_number}
-                            helperText={errors.phone_number}/>
-                        <TextField name="employee_email" label="Email" fullWidth value={newEmployee.employee_email} onChange={handleChange} 
+                            helperText={errors.phone_number} />
+                        <TextField name="employee_email" label="Email" fullWidth value={newEmployee.employee_email} onChange={handleChange}
                             error={!!errors.employee_email}
                             helperText={errors.employee_email} />
                         <TextField name="employee_password" label="Pasword" fullWidth value={newEmployee.employee_password} onChange={handleChange} />
@@ -259,7 +255,7 @@ function Employee() {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
-                        <Button onClick={handleSaveEmployee} color="primary" disabled = {shouldSaveButtonBeDisabled()}>Save</Button>
+                        <Button onClick={handleSaveEmployee} color="primary" disabled={shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>
             </div>

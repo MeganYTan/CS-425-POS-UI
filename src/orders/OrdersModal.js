@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import { KeyboardDatePicker, KeyboardTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import './OrdersModal.css';
 
 
 const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
@@ -61,9 +60,6 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
             setRows(orderProductsArr);
         }
     }, [])
-
-
-
 
     useEffect(() => {
         if (open) {
@@ -162,6 +158,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
 
     const emptyProduct = {
         product_id: 0,
+        product_price: 0,
         quantity: 0
     };
     const increaseRowCounter = () => {
@@ -175,6 +172,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
     const addProduct = () => {
         const newRows = [...rows, getEmptyProduct()];
         setRows(newRows);
+        console.log(rows);
     }
     const deleteProduct = (id) => {
         const newRows = rows.filter(row => row.id != id);
@@ -203,32 +201,35 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
     }
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-            <DialogTitle>Add New Order</DialogTitle>
+            <DialogTitle>Add/Edit Order</DialogTitle>
             <DialogContent style={{ minHeight: "75vh" }}>
                 <div style={{ display: "flex" }}>
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel>Customer ID</InputLabel>
-                            <Select
-                                value={customerId}
-                                onChange={(e) => setCustomerId(e.target.value)}
-                            >
-                                <MenuItem key={""} value={""}>
-                                    No Customer
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel>Customer ID</InputLabel>
+                        <Select
+                            value={customerId}
+                            onChange={(e) => setCustomerId(e.target.value)}
+                        >
+                            <MenuItem key={""} value={""}>
+                                No Customer
+                            </MenuItem>
+                            {customers.map((customer, index) => (
+                                <MenuItem key={customer.customer_id} value={customer.customer_id}>
+                                    {customer.customer_id}: {customer.name_first_name} {customer.name_last_name}
                                 </MenuItem>
-                                {customers.map((customer, index) => (
-                                    <MenuItem key={customer.customer_id} value={customer.customer_id}>
-                                        {customer.customer_id}: {customer.name_first_name} {customer.name_last_name}
-                                    </MenuItem>
 
-                                ))}
-                            </Select>
-                        </FormControl>
+                            ))}
+                        </Select>
+                    </FormControl>
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Discount ID</InputLabel>
                         <Select
                             value={discountId}
                             onChange={(e) => setDiscountId(e.target.value)}
                         >
+                            <MenuItem key={""} value={""}>
+                                No Discount
+                            </MenuItem>
                             {discounts.map((discount, index) => (
                                 <MenuItem key={discount.discount_id} value={discount.discount_id}>
                                     {discount.discount_id}: {discount.coupon_code}; ${discount.discount_amount}
@@ -287,34 +288,40 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
                         onChange={setTime}
                     />
                 </MuiPickersUtilsProvider>
-                <div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div>
+                        Total = {rows.map(i => i.price)}
+                    </div>
                     <Button onClick={addProduct} color="primary" variant="contained">
                         Add Row
                     </Button>
 
                 </div>
                 <DataGrid
-                        rows={rows}
-                        columns={productColumns}
-                        autoHeight
-                        onCellEditCommit={(params, event) => {
-                            if (params.field == "quantity") {
-                                const updatedRows = rows.map(row => {
-                                    if (row.id === params.id) {
-                                        row.quantity = params.value;
-                                    }
-                                    return row;
-                                });
-                                setRows(updatedRows);
-                            }
-                        }}
-                        pageSizeOptions={[3, 5, 10]}
-                        initialState={{
-                            pagination: {
-                                paginationModel: { pageSize: 3, page: 0 },
-                            },
-                        }}
-                    />
+                    rows={rows}
+                    columns={productColumns}
+                    pageSize={3}
+                    autoHeight
+                    onCellEditStop={(params, event) => {
+                        console.log(rows, params);
+                        if (params.field == "quantity") {
+                            const updatedRows = rows.map(row => {
+                                if (row.id === params.id) {
+                                    row.quantity = event.target.value;
+                                }
+                                return row;
+                            });
+                            setRows(updatedRows);
+                            console.log(rows);
+                        }
+                    }}
+                    pageSizeOptions={[3, 5, 10]}
+                    initialState={{
+                        pagination: {
+                            paginationModel: { pageSize: 3, page: 0 },
+                        },
+                    }}
+                />
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
@@ -332,4 +339,5 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
         order_total: "",
         payment_amount: "",
         payment_method: "DEFAULT" */
+// show order total in popup
 export default OrdersModal;
