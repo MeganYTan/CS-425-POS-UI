@@ -3,7 +3,7 @@ import Banner from '../common/banner/Banner';
 import { DataGrid } from '@mui/x-data-grid';
 import { Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@material-ui/core';
 
-function Product() {
+function ProductWithSales() {
     const url = 'http://localhost:5000/product';
     const columns = [
         { field: 'product_id', headerName: 'ID', width: 130, editable: false },
@@ -11,6 +11,7 @@ function Product() {
         { field: 'product_name', headerName: 'Name', width: 200, editable: true },
         { field: 'price', headerName: 'Price', width: 200, editable: true },
         { field: 'product_description', headerName: 'Description', width: 200, editable: true },
+        { field: 'PRODUCT_TOTAL_SALES_AMOUNT', headerName: 'Total Sale Amount', width: 200, editable: true },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -85,9 +86,17 @@ function Product() {
         // get products
         async function fetchData() {
             try {
-                const response = await fetch(url, { mode: 'cors' });
+                const response = await fetch(`${url}/with-sales`, { mode: 'cors' });
                 const data = await response.json();
-                setRows(data);
+                console.log(data);
+                setRows(
+                    data.map(item => {
+                        if (item.product_id == null) {
+                            item.product_id = "All " + item.category;
+                        }
+                        return item;
+                    })
+                );
             } catch (error) {
                 setBanner({ active: true, message: 'There was an error fetching the products data.', type: 'error' });
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
@@ -182,6 +191,7 @@ function Product() {
 
     return (
         <>
+            <h1>Product</h1>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
@@ -223,4 +233,4 @@ function Product() {
     );
 }
 
-export default Product;
+export default ProductWithSales;

@@ -3,7 +3,7 @@ import Banner from '../common/banner/Banner';
 import { DataGrid } from '@mui/x-data-grid';
 import { Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@material-ui/core';
 
-function Product() {
+function ProductWithOrdersAndDiscount() {
     const url = 'http://localhost:5000/product';
     const columns = [
         { field: 'product_id', headerName: 'ID', width: 130, editable: false },
@@ -85,7 +85,7 @@ function Product() {
         // get products
         async function fetchData() {
             try {
-                const response = await fetch(url, { mode: 'cors' });
+                const response = await fetch(`${url}/orders-and-discount`, { mode: 'cors' });
                 const data = await response.json();
                 setRows(data);
             } catch (error) {
@@ -182,6 +182,7 @@ function Product() {
 
     return (
         <>
+            <h1>Product</h1>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
@@ -223,4 +224,4 @@ function Product() {
     );
 }
 
-export default Product;
+export default ProductWithOrdersAndDiscount;

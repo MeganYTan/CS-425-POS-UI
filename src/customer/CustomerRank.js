@@ -7,6 +7,8 @@ function Customer() {
     const url = 'http://localhost:5000/customer';
     const columns = [
         { field: 'customer_id', headerName: 'ID', width: 130, editable: false },
+        { field: 'customer_rank', headerName: 'Rank', width: 130, editable: false },
+        { field: 'product_price_total', headerName: 'Total Spend', width: 200, editable: true },
         { field: 'name_first_name', headerName: 'First Name', width: 200, editable: true },
         { field: 'name_last_name', headerName: 'Last Name', width: 200, editable: true },
         { field: 'email', headerName: 'Email', width: 200, editable: true },
@@ -109,7 +111,7 @@ function Customer() {
         // get customers
         async function fetchData() {
             try {
-                const response = await fetch(url, { mode: 'cors' });
+                const response = await fetch(`${url}/rank`, { mode: 'cors' });
                 const data = await response.json();
                 setRows(data);
             } catch (error) {

@@ -178,7 +178,7 @@ function Discount() {
 
     return (
         <>
-            <h2>Discount</h2>
+            <h1>Discount</h1>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>

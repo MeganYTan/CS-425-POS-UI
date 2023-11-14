@@ -212,7 +212,7 @@ function Order() {
 
     return (
         <>
-            <h2>Order</h2>
+            <h1>Order</h1>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>

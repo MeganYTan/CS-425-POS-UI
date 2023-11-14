@@ -203,7 +203,7 @@ function Employee() {
 
     return (
         <>
-            <h2>Employee</h2>
+            <h1>Employee</h1>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div >
                 <div style={{ display: 'flex', justifyContent: 'right' }}>

@@ -109,7 +109,7 @@ function Customer() {
         // get customers
         async function fetchData() {
             try {
-                const response = await fetch(url, { mode: 'cors' });
+                const response = await fetch(`${url}/with-orders`, { mode: 'cors' });
                 const data = await response.json();
                 setRows(data);
             } catch (error) {
