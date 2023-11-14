@@ -290,7 +290,15 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
                 </MuiPickersUtilsProvider>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <div>
-                        Total = {rows.map(i => i.price)}
+                        Total = {
+                            rows.map(row => {
+                                    // find price of product
+                                    const product = products.find(item => item.product_id == row.product_id);
+                                    const price = product ? product.price : 0;
+                                    return row.quantity * price;
+                                })
+                                .reduce((prev,curr) => (parseFloat(prev) + parseFloat(curr)).toFixed(2), 0)
+                        }
                     </div>
                     <Button onClick={addProduct} color="primary" variant="contained">
                         Add Row
@@ -303,7 +311,6 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
                     pageSize={3}
                     autoHeight
                     onCellEditStop={(params, event) => {
-                        console.log(rows, params);
                         if (params.field == "quantity") {
                             const updatedRows = rows.map(row => {
                                 if (row.id === params.id) {
@@ -312,7 +319,6 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
                                 return row;
                             });
                             setRows(updatedRows);
-                            console.log(rows);
                         }
                     }}
                     pageSizeOptions={[3, 5, 10]}
