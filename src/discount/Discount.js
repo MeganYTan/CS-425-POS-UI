@@ -40,12 +40,6 @@ function Discount() {
         }
     ];
     const [rows, setRows] = useState([
-        {
-            discount_id: 1,
-            discount_amount: 5,
-            discount_description: "Default description",
-            coupon_code: "DEFAULT"
-        },
     ]);
     const emptyDisount = JSON.parse(JSON.stringify({
         discount_amount: '',

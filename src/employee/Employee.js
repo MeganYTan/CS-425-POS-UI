@@ -7,9 +7,9 @@ function Employee() {
     const url = 'http://localhost:5000/employee';
     const columns = [
         { field: 'employee_id', headerName: 'ID', width: 100, editable: false },
-        { field: 'name_first_name', headerName: 'First Name', width: 200, editable: true },
-        { field: 'name_last_name', headerName: 'Last Name', width: 200, editable: true },
-        { field: 'employee_role', headerName: 'Role', width: 200, editable: true },
+        { field: 'name_first_name', headerName: 'First Name', width: 150, editable: true },
+        { field: 'name_last_name', headerName: 'Last Name', width: 150, editable: true },
+        { field: 'employee_role', headerName: 'Role', width: 150, editable: true },
         { field: 'phone_number', headerName: 'Phone Number', width: 200, editable: true },
         { field: 'employee_email', headerName: 'Email', width: 200, editable: true },
         { field: 'employee_password', headerName: 'Password (Hashed)', width: 300, editable: true, },
@@ -43,15 +43,6 @@ function Employee() {
         }
     ];
     const [rows, setRows] = useState([
-        {
-            employee_id: '1',
-            name_first_name: 'DEFAULT',
-            name_last_name: 'DEFAULT',
-            employee_role: 'DEFAULT',
-            phone_number: 'DEFAULT',
-            employee_email: 'DEFAULT',
-            employee_password: 'DEFAULT',
-        },
     ]);
     const emptyEmployee = JSON.parse(JSON.stringify({
         name_first_name: '',
@@ -68,24 +59,32 @@ function Employee() {
         employee_email: '',
         phone_number: '',
     });
-
+    const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    const phoneNumberPattern = /^\d{10}$/;
     const shouldSaveButtonBeDisabled = () => {
         return Object.values(errors).some(error => error !== '') || Object.values(newEmployee).some(value => value === '');
     };
     function handleSaveRow(row) {
+        if (!emailPattern.test(row.employee_email)) {
+            setBanner({ active: true, message: 'Email is not valid.', type: 'error' });
+            setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+            return;
+        } else if (!phoneNumberPattern.test(row.phone_number)) {
+            setBanner({ active: true, message: 'Phone number is not valid', type: 'error' });
+            setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+            return;
+        }
         editEmployeeAPI(row.employee_id, row);
     }
     const handleChange = (e) => {
         const { name, value } = e.target;
         const newErrors = { ...errors, [name]: '' };
 
-        const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+        
         if (name === "employee_email" && !emailPattern.test(value)) {
             newErrors.employee_email = "Please enter a valid email address.";
         }
 
-        // Validate phone number
-        const phoneNumberPattern = /^\d{10}$/;
         if (name === "phone_number" && !phoneNumberPattern.test(value)) {
             newErrors.phone_number = "Phone number must be 10 digits.";
         }

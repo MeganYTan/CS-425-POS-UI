@@ -30,7 +30,7 @@ function Header() {
                     <Link to="/employee" className={classes.link}><Button color="inherit">Employees</Button></Link>
                     <Link to="/product" className={classes.link}><Button color="inherit">Products</Button></Link>
                     <Link to="/orders" className={classes.link}><Button color="inherit">Orders</Button></Link>
-                    <Link to="/info" className={classes.link}><Button color="inherit">Info</Button></Link>
+                    <Link to="/advanced-queries" className={classes.link}><Button color="inherit">Advanced Queries</Button></Link>
                 </Toolbar>
             </AppBar>
         </div>

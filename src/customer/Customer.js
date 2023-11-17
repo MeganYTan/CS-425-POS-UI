@@ -42,14 +42,6 @@ function Customer() {
         }
     ];
     const [rows, setRows] = useState([
-        {
-            customer_id: 1,
-            name_first_name: 'John',
-            name_last_name: 'Doe',
-            email: 'john.doe@example.com',
-            loyalty_points: 100,
-            phone_number: '123-456-7890'
-        },
     ]);
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
     const [modalOpen, setModalOpen] = React.useState(false);
@@ -64,25 +56,31 @@ function Customer() {
         email: '',
         phone_number: '',
     });
-
+    const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    const phoneNumberPattern = /^\d{10}$/;
     const shouldSaveButtonBeDisabled = () => {
         return Object.values(errors).some(error => error !== '') || Object.values(newCustomer).some(value => value === '');
     };
     function handleSaveRow(row) {
+        console.log(row);
+        // validate email
+        if (!emailPattern.test(row.email)) {
+            setBanner({ active: true, message: 'Email is not valid.', type: 'error' });
+            setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+            return;
+        } else if (!phoneNumberPattern.test(row.phone_number)) {
+            setBanner({ active: true, message: 'Phone number is not valid', type: 'error' });
+            setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+            return;
+        }
         editCustomerAPI(row.customer_id, row);
     }
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         const newErrors = { ...errors, [name]: '' };
-
-        const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
         if (name === "email" && !emailPattern.test(value)) {
             newErrors.email = "Please enter a valid email address.";
         }
-
-        // Validate phone number
-        const phoneNumberPattern = /^\d{10}$/;
         if (name === "phone_number" && !phoneNumberPattern.test(value)) {
             newErrors.phone_number = "Phone number must be 10 digits.";
         }
@@ -144,7 +142,7 @@ function Customer() {
                 setBanner({ active: true, message: 'Failed to delete the customer: ' + error, type: 'error' });
                 setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
-        
+
     }
 
     function editCustomerAPI(customer_id, field, value) {
@@ -173,7 +171,7 @@ function Customer() {
             })
             .catch((error) => {
                 setBanner({ active: true, message: 'Failed to delete the customer: ' + error, type: 'error' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
 
     }
@@ -202,13 +200,13 @@ function Customer() {
             })
             .catch((error) => {
                 setBanner({ active: true, message: 'Failed to delete the customer: ' + error, type: 'error' });
-                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
             });
     }
 
     return (
         <>
-            
+            <h1>Customer</h1>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div >
                 <div style={{ display: 'flex', justifyContent: 'right' }}>
@@ -218,6 +216,7 @@ function Customer() {
                     </Button>
 
                 </div>
+
                 <DataGrid
                     rows={rows}
                     columns={columns}
@@ -235,7 +234,7 @@ function Customer() {
                     <DialogContent>
                         <TextField name="name_first_name" label="First Name" fullWidth value={newCustomer.name_first_name} onChange={handleChange} />
                         <TextField name="name_last_name" label="Last Name" fullWidth value={newCustomer.name_last_name} onChange={handleChange} />
-                        <TextField name="loyalty_points" label="Loyalty Points" fullWidth value={newCustomer.loyalty_points} onChange={handleChange} />
+                        <TextField name="loyalty_points" type="number" label="Loyalty Points" fullWidth value={newCustomer.loyalty_points} onChange={handleChange} />
                         <TextField
                             name="email"
                             label="Email"

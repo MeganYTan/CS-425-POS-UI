@@ -6,11 +6,11 @@ import { Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } 
 function Product() {
     const url = 'http://localhost:5000/product';
     const columns = [
-        { field: 'product_id', headerName: 'ID', width: 130, editable: false },
-        { field: 'category', headerName: 'Category', width: 200, editable: true },
+        { field: 'product_id', headerName: 'ID', width: 100, editable: false },
+        { field: 'category', headerName: 'Category', width: 130, editable: true },
         { field: 'product_name', headerName: 'Name', width: 200, editable: true },
-        { field: 'price', headerName: 'Price', width: 200, editable: true },
-        { field: 'product_description', headerName: 'Description', width: 200, editable: true },
+        { field: 'price', headerName: 'Price', width: 130, editable: true },
+        { field: 'product_description', headerName: 'Description', width: 700, editable: true },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -41,13 +41,6 @@ function Product() {
         }
     ];
     const [rows, setRows] = useState([
-        {
-            product_id: '1',
-            category: 'DEFAULT',
-            product_name: 'DEFAULT',
-            price: '1',
-            product_description: 'DEFAULT',
-        },
     ]);
     const emptyProduct = JSON.parse(JSON.stringify({
         category: '',
@@ -182,6 +175,7 @@ function Product() {
 
     return (
         <>
+            <h1>Product</h1>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
             <div>
                 <div style={{ display: 'flex', justifyContent: 'right' }}>

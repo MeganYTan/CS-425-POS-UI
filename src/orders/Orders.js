@@ -7,17 +7,6 @@ import OrdersModal from './OrdersModal';
 function Order() {
     const url = 'http://localhost:5000/orders';
     const [rows, setRows] = useState([
-        {
-            order_id: 1,
-            customer_id: 1,
-            discount_id: 1,
-            employee_id: 1,
-            date_time: "",
-            order_products: "1:1",
-            order_total: 1,
-            payment_amount: 1,
-            payment_method: "DEFAULT"
-        },
     ]);
 
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
@@ -25,7 +14,7 @@ function Order() {
     const [modalSource, setModalSource] = React.useState("");
     const [modalData, setModalData] = React.useState({});
     const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
+    const closeModal = () => setIsModalOpen(false); 
     const columns = [
         { field: 'order_id', headerName: 'ID', width: 100, editable: false },
         { field: 'customer_id', headerName: 'Customer', width: 150, editable: false },
@@ -33,7 +22,7 @@ function Order() {
         { field: 'employee_id', headerName: 'Employee ID', width: 170, editable: false },
         { field: 'date_time', headerName: 'Date and Time', width: 250, editable: false },
         { field: 'order_products', headerName: 'Products: Quantity', width: 250, editable: false },
-        { field: 'order_total', headerName: 'Order Amount', width: 170, editable: false, },
+        // { field: 'order_total', headerName: 'Order Amount', width: 170, editable: false, },
         { field: 'payment_amount', headerName: 'Payment Amount', width: 190, editable: false, },
         { field: 'payment_method', headerName: 'Payment Method', width: 180, editable: false, },
         {

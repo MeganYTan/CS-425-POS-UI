@@ -58,7 +58,8 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
             });
             setRowCounter(idCounter);
             setRows(orderProductsArr);
-        }
+            console.log(discountId);
+        }   
     }, [])
 
     useEffect(() => {
@@ -110,7 +111,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
     const productColumns = [
         // Define your columns for products here
         {
-            field: 'product_id', headerName: 'ID', width: 300, editable: true,
+            field: 'product_id', headerName: 'ID', width: 300, editable: false,
             renderCell: (params) => (
                 <select
                     value={params.value}
@@ -157,8 +158,8 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
 
 
     const emptyProduct = {
-        product_id: 0,
-        product_price: 0,
+        product_id: 1,
+        product_price: 4.50,
         quantity: 0
     };
     const increaseRowCounter = () => {
@@ -197,7 +198,34 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
         onClose();
     };
     const shouldSaveButtonBeDisabled = () => {
-        return employeeId === "" || rows.length === 0;
+        // no employees
+        return employeeId === ""
+            // no products
+             || rows.length === 0 
+             // payment amount not correct
+             || paymentAmount != getTotal()
+             // no payment method
+             || paymentMethod === ""
+             
+             ;
+    }
+    const getTotal = () => {
+        const productAmount = rows.map(row => {
+            // find price of product
+            const product = products.find(item => {
+                return item.product_id == row.product_id
+            });
+            const price = product ? product.price : 0;
+            return row.quantity * price;
+        })
+        .reduce((prev,curr) => (parseFloat(prev) + parseFloat(curr)).toFixed(2), 0)
+        const discount = discounts.find(discount => {
+            if (discount.discount_id == discountId) {
+                return discount;
+            }
+        });
+        const discountAmount = discount?.discount_amount ? discount.discount_amount : 0;
+        return productAmount-discountAmount;
     }
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -290,15 +318,7 @@ const OrdersModal = ({ open, onClose, onSave, source, orderData }) => {
                 </MuiPickersUtilsProvider>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <div>
-                        Total = {
-                            rows.map(row => {
-                                    // find price of product
-                                    const product = products.find(item => item.product_id == row.product_id);
-                                    const price = product ? product.price : 0;
-                                    return row.quantity * price;
-                                })
-                                .reduce((prev,curr) => (parseFloat(prev) + parseFloat(curr)).toFixed(2), 0)
-                        }
+                        Total = {getTotal()}
                     </div>
                     <Button onClick={addProduct} color="primary" variant="contained">
                         Add Row
