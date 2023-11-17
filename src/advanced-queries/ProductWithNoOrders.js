@@ -41,8 +41,14 @@ function ProductWithNoOrders() {
     return (
         <>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
+            <div style={{
+                border: '1px solid',
+                padding: '10px',
+                boxShadow: '5px 1px'
+            }}>
             <div>This query displays all products that have not been purchased. It uses set membership: </div>
             <div> Select * from PRODUCT WHERE product_id not in (Select distinct product_id from ORDER_PRODUCT);
+            </div>
             </div>
             <div>
                 <DataGrid

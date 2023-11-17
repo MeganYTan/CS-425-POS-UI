@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import ProductCheaperThanAverage from './ProductCheaperThanAverage';
 import ProductWithOrdersAndDiscount from './ProductWithOrdersAndDiscount';
 import ProductWithSales from './ProductWithSales';
-import CustomerWithOrders from './CustomerWithOrders';
 import CustomerRank from './CustomerRank';
 import ProductWithNoOrders from './ProductWithNoOrders';
 import DailySalesReport from './DailySalesReport';

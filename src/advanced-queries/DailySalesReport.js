@@ -40,6 +40,11 @@ function DailySalesReport() {
     return (
         <>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
+            <div style={{
+                border: '1px solid',
+                padding: '10px',
+                boxShadow: '5px 1px'
+            }}>
             <div>This query displays products along with their pruchase quantity and category by day. This query is uses olap (rollup) to show the daily quantity by cateogry. START_DATE and END_DATE are the user entered parameters </div>
             <div>
                 SELECT date_time,
@@ -53,6 +58,7 @@ function DailySalesReport() {
                 GROUP BY date_time, category, product_name
                 WITH ROLLUP
             </div>
+            </div>
             <br></br>
             <form onSubmit={handleSubmit}>
                 <label>
@@ -62,7 +68,7 @@ function DailySalesReport() {
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                     />
-                </label>
+                </label>&nbsp;
                 <label>
                     End Date:
                     <input

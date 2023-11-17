@@ -42,6 +42,11 @@ function ProductWithSales() {
     return (
         <>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
+            <div style={{
+                border: '1px solid',
+                padding: '10px',
+                boxShadow: '5px 1px'
+            }}>
             <div>This query displays products along with their total sale amount. This query is uses olap (rollup): </div>
             <div>         SELECT
                 product.product_id,
@@ -55,6 +60,7 @@ function ProductWithSales() {
                 WHERE date_time BETWEEN '2023-01-01' AND '2023-10-02'
                 GROUP BY date_time, category, product_name, product_id
                 WITH ROLLUP;
+            </div>
             </div>
             <div>
                 <DataGrid

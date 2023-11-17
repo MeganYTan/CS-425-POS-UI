@@ -71,6 +71,11 @@ function ProductByDate() {
     return (
         <>
             {banner.active && <Banner message={banner.message} type={banner.type} />}
+            <div style={{
+                border: '1px solid',
+                padding: '10px',
+                boxShadow: '5px 1px'
+            }}>
             <div>This query displays products along with their cumulative quantity within a date range. This query is uses a window function (sum over partition) and set membership (in).<br></br> START_DATE, END_DATE, and PRODUCT_IDS are the user entered parameters </div>
             <div>
                 SELECT
@@ -92,6 +97,7 @@ function ProductByDate() {
                 ORDER BY
                 p.product_id, o.date_time;
             </div>
+            </div>
             <br></br>
             <form onSubmit={handleSubmit}>
                 <label>
@@ -101,7 +107,7 @@ function ProductByDate() {
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                     />
-                </label>
+                </label>&nbsp;
                 <label>
                     End Date:
                     <input
