@@ -15,7 +15,7 @@ function Customer() {
         {
             field: 'actions',
             headerName: 'Actions',
-            width: 200,
+            width: 220,
             renderCell: (params) => {
                 return (
                     <>
@@ -27,7 +27,7 @@ function Customer() {
                         >
                             Save
                         </Button>
-                        &nbsp;&nbsp;
+                        &nbsp;
                         <Button
                             variant="contained"
                             color="secondary"
@@ -35,6 +35,15 @@ function Customer() {
                             onClick={() => deleteCustomerAPI(params.row.customer_id)}
                         >
                             Delete
+                        </Button>
+                        &nbsp;
+                        <Button
+                            variant="contained"
+                            color="blue"
+                            size="small"
+                            onClick={() => getCustomerByIdAPI(params.row.customer_id)}
+                        >
+                            reset
                         </Button>
                     </>
                 );
@@ -88,11 +97,12 @@ function Customer() {
         setErrors(newErrors);
         setNewCustomer({ ...newCustomer, [name]: value });
     };
-
     const handleSaveCustomer = async () => {
         addCustomerAPI(newCustomer);
+        closeModal();
 
-        // Reset the form and close the modal
+    };
+    const closeModal = () => {
         setNewCustomer({
             name_first_name: '',
             name_last_name: '',
@@ -101,7 +111,7 @@ function Customer() {
             phone_number: ''
         });
         setModalOpen(false);
-    };
+    }
 
     useEffect(() => {
         // get customers
@@ -117,6 +127,33 @@ function Customer() {
         }
         fetchData();
     }, []);
+
+    function getCustomerByIdAPI(customerId) {
+        fetch(`${url}/${customerId}`, {
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data) {
+                    setBanner({ active: true, message: 'Customer reseted successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    const updatedRows = rows.map(item => {
+                        if (item.customer_id === customerId) {
+                            item = data;
+                        }
+                        return item;
+                    })
+                    setRows(updatedRows);
+                } else {
+                    setBanner({ active: true, message: 'Failed to reset the customer: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to reset the customer: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+            });
+    }
 
     function deleteCustomerAPI(customerId) {
         fetch(`${url}/delete/${customerId}`, {
@@ -255,7 +292,7 @@ function Customer() {
                         />
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
+                        <Button onClick={closeModal} color="primary">Cancel</Button>
                         <Button onClick={handleSaveCustomer} color="primary" disabled={shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>

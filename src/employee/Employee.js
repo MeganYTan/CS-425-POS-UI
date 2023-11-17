@@ -16,7 +16,7 @@ function Employee() {
         {
             field: 'actions',
             headerName: 'Actions',
-            width: 200,
+            width: 220,
             renderCell: (params) => {
                 return (
                     <>
@@ -28,7 +28,7 @@ function Employee() {
                         >
                             Save
                         </Button>
-                        &nbsp;&nbsp;
+                        &nbsp;
                         <Button
                             variant="contained"
                             color="secondary"
@@ -36,6 +36,15 @@ function Employee() {
                             onClick={() => deleteEmployeeAPI(params.row.employee_id)}
                         >
                             Delete
+                        </Button>
+                        &nbsp;
+                        <Button
+                            variant="contained"
+                            color="blue"
+                            size="small"
+                            onClick={() => getEmployeeByIdAPI(params.row.employee_id)}
+                        >
+                            reset
                         </Button>
                     </>
                 );
@@ -91,14 +100,16 @@ function Employee() {
         setErrors(newErrors);
         setNewEmployee({ ...newEmployee, [name]: value });
     };
-
+    
     const handleSaveEmployee = async () => {
         addEmployeeAPI(newEmployee);
+        closeModal();
 
-        // Reset the form and close the modal
+    };
+    const closeModal = () => {
         setNewEmployee(emptyEmployee);
         setModalOpen(false);
-    };
+    }
 
     useEffect(() => {
         // get employees
@@ -114,6 +125,33 @@ function Employee() {
         }
         fetchData();
     }, []);
+    
+    function getEmployeeByIdAPI(employeeId) {
+        fetch(`${url}/${employeeId}`, {
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data) {
+                    setBanner({ active: true, message: 'Employee reseted successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    const updatedRows = rows.map(item => {
+                        if (item.employee_id === employeeId) {
+                            item = data;
+                        }
+                        return item;
+                    })
+                    setRows(updatedRows);
+                } else {
+                    setBanner({ active: true, message: 'Failed to reset the employee: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to reset the employee: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+            });
+    }
     function addEmployeeAPI(newEmployee) {
         fetch(`${url}/add`, {
             method: 'POST',
@@ -253,7 +291,7 @@ function Employee() {
 
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
+                        <Button onClick={closeModal} color="primary">Cancel</Button>
                         <Button onClick={handleSaveEmployee} color="primary" disabled={shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>

@@ -14,7 +14,7 @@ function Product() {
         {
             field: 'actions',
             headerName: 'Actions',
-            width: 200,
+            width: 220,
             renderCell: (params) => {
                 return (
                     <>
@@ -26,7 +26,7 @@ function Product() {
                         >
                             Save
                         </Button>
-                        &nbsp;&nbsp;
+                        &nbsp;
                         <Button
                             variant="contained"
                             color="secondary"
@@ -34,6 +34,15 @@ function Product() {
                             onClick={() => deleteProductAPI(params.row.product_id)}
                         >
                             Delete
+                        </Button>
+                        &nbsp;
+                        <Button
+                            variant="contained"
+                            color="blue"
+                            size="small"
+                            onClick={() => getProductByIdAPI(params.row.product_id)}
+                        >
+                            reset
                         </Button>
                     </>
                 );
@@ -65,14 +74,15 @@ function Product() {
             [e.target.name]: e.target.value
         });
     };
-
     const handleSaveProduct = async () => {
         addProductAPI(newProduct);
+        closeModal();
 
-        // Reset the form and close the modal
+    };
+    const closeModal = () => {
         setNewProduct(emptyProduct);
         setModalOpen(false);
-    };
+    }
 
     useEffect(() => {
         // get products
@@ -88,6 +98,33 @@ function Product() {
         }
         fetchData();
     }, []);
+    
+    function getProductByIdAPI(productId) {
+        fetch(`${url}/${productId}`, {
+            mode: 'cors'
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data) {
+                    setBanner({ active: true, message: 'Product reseted successfully!', type: 'success' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 3000);
+                    const updatedRows = rows.map(item => {
+                        if (item.product_id === productId) {
+                            item = data;
+                        }
+                        return item;
+                    })
+                    setRows(updatedRows);
+                } else {
+                    setBanner({ active: true, message: 'Failed to reset the product: ' + data.message, type: 'error' });
+                    setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+                }
+            })
+            .catch((error) => {
+                setBanner({ active: true, message: 'Failed to reset the product: ' + error, type: 'error' });
+                setTimeout(() => setBanner({ active: false, message: '', type: '' }), 5000);
+            });
+    }
     function addProductAPI(newProduct) {
         fetch(`${url}/add`, {
             method: 'POST',
@@ -208,7 +245,7 @@ function Product() {
 
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setModalOpen(false)} color="primary">Cancel</Button>
+                        <Button onClick={closeModal} color="primary">Cancel</Button>
                         <Button onClick={handleSaveProduct} color="primary" disabled={shouldSaveButtonBeDisabled()}>Save</Button>
                     </DialogActions>
                 </Dialog>
