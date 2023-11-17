@@ -9,7 +9,8 @@ function ProductWithSales() {
         { field: 'category', headerName: 'Category', width: 130, editable: false },
         { field: 'product_name', headerName: 'Name', width: 200, editable: false },
         { field: 'price', headerName: 'Price', width: 130, editable: false },
-        { field: 'product_description', headerName: 'Description', width: 800, editable: false },
+        { field: 'product_description', headerName: 'Description', width: 650, editable: false },
+        { field: 'PRODUCT_TOTAL_QUANTITY', headerName: 'Total Quantity', width: 130, editable: false },
         { field: 'PRODUCT_TOTAL_SALES_AMOUNT', headerName: 'Total Sale Amount', width: 130, editable: false },
     ];
     const [rows, setRows] = useState([
@@ -47,20 +48,20 @@ function ProductWithSales() {
                 padding: '10px',
                 boxShadow: '5px 1px'
             }}>
-            <div>This query displays products along with their total sale amount. This query is uses olap (rollup): </div>
-            <div>         SELECT
-                product.product_id,
-                date_time,
-                COALESCE(category, 'ALL') AS product_category,
-                COALESCE(product_name, 'ALL') AS product_name,
-                SUM(ORDER_PRODUCT.quantity) AS PRODUCT_TOTAL_QUANTITY
-                FROM ORDERS
-                JOIN ORDER_PRODUCT ON ORDERS.order_id = ORDER_PRODUCT.order_id
-                JOIN PRODUCT ON ORDER_PRODUCT.product_id = PRODUCT.product_id
-                WHERE date_time BETWEEN '2023-01-01' AND '2023-10-02'
-                GROUP BY date_time, category, product_name, product_id
-                WITH ROLLUP;
-            </div>
+                <div>This query displays products along with their total sale amount. This query is uses olap (rollup): </div>
+                <div>
+                    SELECT p.product_id, p.category, product_name, price, product_description, PRODUCT_TOTAL_QUANTITY, PRODUCT_TOTAL_SALES_AMOUNT FROM PRODUCT RIGHT JOIN<br></br>
+                    (SELECT
+                    COALESCE(category, 'All') AS category,
+                    product_id,
+                    SUM(quantity*price) AS PRODUCT_TOTAL_SALES_AMOUNT,
+                    SUM(quantity) as PRODUCT_TOTAL_QUANTITY<br></br>
+                    FROM ORDER_PRODUCT NATURAL JOIN PRODUCT
+                    GROUP BY category, product_id
+                    WITH ROLLUP
+                    )p <br></br> 
+                    on PRODUCT.product_id = p.product_id;
+                </div>
             </div>
             <div>
                 <DataGrid

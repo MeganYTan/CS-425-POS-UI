@@ -7,11 +7,12 @@ function ProductByDate() {
     const url = 'http://localhost:5000/product';
     const columns = [
         { field: 'date_time', headerName: 'Date', width: 250, editable: false },
-        { field: 'product_id', headerName: 'ID', width: 100, editable: false },
-        { field: 'product_category', headerName: 'Category', width: 130, editable: false },
+        { field: 'product_id', headerName: 'Product ID', width: 150, editable: false },
+        { field: 'category', headerName: 'Category', width: 130, editable: false },
         { field: 'product_name', headerName: 'Name', width: 200, editable: false },
         { field: 'quantity', headerName: 'Quantity', width: 130, editable: false },
-        { field: 'CumulativeQuantity', headerName: 'Cumulative Quantity', width: 130, editable: false },
+        { field: 'CumulativeQuantity', headerName: 'Cumulative Quantity', width: 150, editable: false },
+        { field: 'CumulativePrice', headerName: 'Cumulative Total', width: 150, editable: false },
     ];
     const [rows, setRows] = useState([]);
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
@@ -84,7 +85,9 @@ function ProductByDate() {
                 p.product_name,
                 p.category,
                 op.quantity,
-                SUM(op.quantity) OVER (PARTITION BY p.product_id ORDER BY o.date_time) AS CumulativeQuantity<br></br>
+                SUM(op.quantity) OVER (PARTITION BY p.product_id ORDER BY o.date_time) AS CumulativeQuantity,
+                SUM(op.quantity * p.price) OVER (PARTITION BY p.product_id ORDER BY o.date_time) AS CumulativePrice
+                <br></br>
                 FROM
                 Orders o
                 JOIN

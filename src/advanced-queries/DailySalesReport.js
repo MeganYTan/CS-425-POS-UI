@@ -7,7 +7,8 @@ function DailySalesReport() {
         { field: 'date_time', headerName: 'Date', width: 250, editable: false },
         { field: 'product_category', headerName: 'Category', width: 130, editable: false },
         { field: 'product_name', headerName: 'Name', width: 200, editable: false },
-        { field: 'PRODUCT_TOTAL_QUANTITY', headerName: 'Total Sale Quantity', width: 130, editable: false },
+        { field: 'PRODUCT_TOTAL_QUANTITY', headerName: 'Total Quantity', width: 130, editable: false },
+        { field: 'PRODUCT_TOTAL_PRICE', headerName: 'Total Price', width: 130, editable: false },
     ];
     const [rows, setRows] = useState([]);
     const [banner, setBanner] = React.useState({ active: false, message: '', type: '' });
@@ -45,12 +46,13 @@ function DailySalesReport() {
                 padding: '10px',
                 boxShadow: '5px 1px'
             }}>
-            <div>This query displays products along with their pruchase quantity and category by day. This query is uses olap (rollup) to show the daily quantity by cateogry. START_DATE and END_DATE are the user entered parameters </div>
+            <div>This query displays sales by category and day. This query uses olap (rollup) to show the daily quantity by cateogry. START_DATE and END_DATE are the user entered parameters </div>
             <div>
                 SELECT date_time,
                 COALESCE(category, 'ALL') AS product_category,
                 COALESCE(product_name, 'ALL') AS product_name,
-                SUM(ORDER_PRODUCT.quantity) AS PRODUCT_TOTAL_QUANTITY
+                SUM(ORDER_PRODUCT.quantity) AS PRODUCT_TOTAL_QUANTITY,
+                SUM(ORDER_PRODUCT.quantity * price) as PRODUCT_TOTAL_PRICE
                 FROM ORDERS
                 JOIN ORDER_PRODUCT ON ORDERS.order_id = ORDER_PRODUCT.order_id
                 JOIN PRODUCT ON ORDER_PRODUCT.product_id = PRODUCT.product_id

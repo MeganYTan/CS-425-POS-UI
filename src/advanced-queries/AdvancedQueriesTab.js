@@ -22,11 +22,11 @@ function AdvancedQueriesTab() {
             tabIndex: 0,
             component: <CustomerRank />
         },
-        {
-            label: "Products Cheaper than Average",
-            tabIndex: 1,
-            component:  <ProductCheaperThanAverage />
-        },
+        // {
+        //     label: "Products Cheaper than Average",
+        //     tabIndex: 1,
+        //     component:  <ProductCheaperThanAverage />
+        // },
         /*{
             label: "Products with Orders and Discounts",
             tabIndex: 2,
@@ -43,7 +43,7 @@ function AdvancedQueriesTab() {
             component: <ProductWithNoOrders />
         },
         {
-            label: "Daily Sales by Product and Quantity",
+            label: "Daily Sales with Category",
             tabIndex: 5,
             component: <DailySalesReport />
         },
